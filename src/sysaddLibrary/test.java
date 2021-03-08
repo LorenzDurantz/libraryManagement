@@ -1,182 +1,74 @@
 package sysaddLibrary;
 
+
+import java.awt.Color;
+import java.awt.EventQueue;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.*;
-import java.text.DateFormat;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
- 
+
 import javax.swing.*;
+
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 
 import net.proteanit.sql.DbUtils;
 import sysaddLibrary.main.ex;
 
-import java.awt.Color;
-import java.awt.SystemColor;
- 
-public class main {
-     
-    public static class ex{
-        public static int days=0;
-            }
- 
-    public static void main(String[] args) {
-         
-        admin_menu();
-    }
-    //login still wip
-	public static void login() {
-     
-    JFrame f=new JFrame("Login");//creating instance of JFrame  
-    JLabel l1,l2;  
-    l1=new JLabel("Email");  //Create label Username
-    l1.setBounds(30,15, 100,30); //x axis, y axis, width, height 
-     
-    l2=new JLabel("Password");  //Create label Password
-    l2.setBounds(30,50, 100,30);    
-     
-    JTextField F_user = new JTextField(); //Create text field for username
-    F_user.setBounds(110, 15, 200, 30);
-         
-    JPasswordField F_pass=new JPasswordField(); //Create text field for password
-    F_pass.setBounds(110, 50, 200, 30);
-       
-    JButton login_but=new JButton("Login");//creating instance of JButton for Login Button
-    login_but.setBounds(130,90,80,25);//Dimensions for button
-    login_but.addActionListener(new ActionListener() {  //Perform action
-         
-        public void actionPerformed(ActionEvent e){ 
- 
-        String username = F_user.getText(); //Store username entered by the user in the variable "username"
-        String password = F_pass.getText(); //Store password entered by the user in the variable "password"
-         
-        if(username.equals("")) //If username is null
-        {
-            JOptionPane.showMessageDialog(null,"Please enter Email"); //Display dialog box with the message
-        } 
-        else if(password.equals("")) //If password is null
-        {
-            JOptionPane.showMessageDialog(null,"Please enter password"); //Display dialog box with the message
-        }
-        else { //If both the fields are present then to login the user, check wether the user exists already
-            //System.out.println("Login connect");
-            Connection connection=connect();  //Connect to the database
-            try
-            {
-            Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,
-            	    ResultSet.CONCUR_READ_ONLY);
-              stmt.executeUpdate("USE LIBRARY"); //Use the database with the name "Library"
-              String st = ("SELECT * FROM USERS WHERE EMAIL='"+username+"' AND PASSWORD='"+password+"'"); //Retreive username and passwords from users
-              ResultSet rs = stmt.executeQuery(st); //Execute query
-              if(rs.next()==false) { //Move pointer below
-                  System.out.print("No user");  
-                  JOptionPane.showMessageDialog(null,"Wrong Username/Password!"); //Display Message
- 
-              }
-              else {
-                  f.dispose();
-                rs.beforeFirst();  //Move the pointer above
-                while(rs.next())
-                {
-                  String admin = rs.getString("ADMIN"); //user is admin
-                  //System.out.println(admin);
-                  String UID = rs.getString("IDNUM"); //Get user ID of the user
-                  if(admin.equals("1")) { //If boolean value 1
-                      admin_menu(); //redirect to admin menu
-                  }
-                  else{
-                	  JOptionPane.showMessageDialog(null,"Error: Contact Administrator!"); //Display Message //redirect to user menu for that user ID
-                  }
-              }
-              }
-            }
-            catch (Exception ex) {
-                 ex.printStackTrace();
-        }
-        }
-    }               
-    });
- 
-     
-    f.getContentPane().add(F_pass); //add password
-    f.getContentPane().add(login_but);//adding button in JFrame  
-    f.getContentPane().add(F_user);  //add user
-    f.getContentPane().add(l1);  // add label1 i.e. for username
-    f.getContentPane().add(l2); // add label2 i.e. for password
-    f.setSize(400,180);//400 width and 500 height  
-    f.getContentPane().setLayout(null);//using no layout managers  
-    f.setVisible(true);//making the frame visible 
-    f.setLocationRelativeTo(null);
-     
-}
-	
-	public static Connection connect()
-	{
-	try {
-	        Class.forName("com.mysql.cj.jdbc.Driver");
-	        //System.out.println("Loaded driver");
-	        Connection con = DriverManager.getConnection("jdbc:mysql://localhost/library");
-	        //System.out.println("Connected to MySQL");
-	        return con;
-	 } 
-	 catch (Exception ex) {
-	        ex.printStackTrace();
-	 }
-	return null;
+
+
+
+public class test {
+
+	private JFrame frame;
+	private JTextField R_brfid;
+	private JTextField R_bTitle;
+	private JTextField R_bAuth;
+	private JTextField R_idNum;
+	private JTextField R_bStatus;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					test window = new test();
+					window.frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the application.
+	 */
+	public test() {
+		initialize();
+		
 	}
 	
-	public static void database() {
-	    try {
-	    Connection connection=connect();
-	    ResultSet resultSet = connection.getMetaData().getCatalogs();
-	    //iterate each catalog in the ResultSet
-	        while (resultSet.next()) {
-	          // Get the database name, which is at position 1
-	          String databaseName = resultSet.getString(1);
-	          if(databaseName.equals("library")) {
-	              //System.out.print("yes");
-	              Statement stmt = connection.createStatement();
-	              //Drop database if it pre-exists to reset the complete database
-	              String sql = "DROP DATABASE library";
-	              stmt.executeUpdate(sql);
-	          }
-	        }
-	          Statement stmt = connection.createStatement();
-	           
-	          String sql = "CREATE DATABASE LIBRARY"; //Create Database
-	          stmt.executeUpdate(sql); 
-	          stmt.executeUpdate("USE LIBRARY"); //Use Database
-	          //Create Users Table
-	          String sql1 = "CREATE TABLE USERS(IDNUM INT NOT NULL AUTO_INCREMENT PRIMARY KEY, EMAIL VARCHAR(30), PASSWORD VARCHAR(30), ADMIN BOOLEAN)";
-	          stmt.executeUpdate(sql1);
-	          //Insert into users table
-	          stmt.executeUpdate("INSERT INTO USERS(EMAIL, PASSWORD, ADMIN) VALUES('admin','admin',TRUE)");
-	          //Create Books table
-	          stmt.executeUpdate("CREATE TABLE BOOKS(BACCNUM INT NOT NULL AUTO_INCREMENT PRIMARY KEY, BRFID VARCHAR(10),BTITLE VARCHAR(50), BAUTH VARCHAR(50), GENRE VARCHAR(50), PUBLISHER VARCHAR(50), PUBYEAR INT(4), ISSUED_DATE VARCHAR(20), RETURN_DATE VARCHAR(20), PERIOD INT, STATUS VARCHAR(20), UID INT)");
-	          //Create Issued Table
-	          stmt.executeUpdate("CREATE TABLE ISSUED(ISSUEID INT NOT NULL AUTO_INCREMENT PRIMARY KEY, BRFID INT(10), UID INT, BACCNUM INT, ISSUED_DATE VARCHAR(20), RETURN_DATE VARCHAR(20), PERIOD INT)");
-	          //Insert into books table
-	          stmt.executeUpdate("INSERT INTO BOOKS(BRFID, BTITLE, BAUTH, GENRE, PUBLISHER, PUBYEAR, STATUS) VALUES ('0007315860', 'War and Peace', 'Mike Stint', 'Fiction', 'Publeash Inc.', 2002, 'Available'),  ('0007315861', 'The Sost Lymbol', 'Ban Drown', 'Nonfiction', 'Penguin Inc.', 2010, 'Available'), ('0007315862', 'Jomeo and Ruliet', 'Shilliam Wakespeare', 'Mystery', 'Microsoft Publishing.', 2022, 'Available'),('0007315863', '1489', 'Borge Borwell', 'Comedy', 'Mystery Inc.', 1489, 'Available'), ('0007315864', 'Tarey Fails', 'Princess Aurora', 'Horror', 'The Printer Inc', 2012, 'Available'),('0007315865', 'Bambee', 'Salt Widney', 'Mythology', 'Jack Sparrow Publishers', 1985, 'Available'), ('0007315866', 'Mankey', 'Shmibid Attenmibid', 'Educational', 'SF Publishing', 1521, 'Available')");
-	          //login
-	          stmt.executeUpdate("CREATE TABLE LOGIN(studentID INT NOT NULL, URFID VARCHAR(10), FNAME VARCHAR(50), LNAME VARCHAR(50), EMAIL VARCHAR(50), USTYPE VARCHAR(50), DATE datetime default now())");
-	    resultSet.close();
-	    
-	    }
-	     catch (Exception ex) {
-	         ex.printStackTrace();
-             admin_menu();
-	     }
-	}
 	
-	public static void admin_menu() {
-	     
+
+	/**
+	 * Initialize the contents of the frame.
+	 */
+	public void initialize() {
+
 		JFrame f=new JFrame("APC RFID LIBRARY SYSTEM");
 	    f.getContentPane().setBackground(new Color(192, 192, 192));
 	    f.getContentPane().setForeground(Color.WHITE);
@@ -377,10 +269,174 @@ public class main {
 	    issue_book.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e){
 	                //enter details
-	        	issueBook.issueBooks();
-	        }
-	     });
-	        	
+
+	        	JFrame g = new JFrame("Enter Details");
+	     		 g.setTitle("Borrow Book");
+	              //g.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	              //create labels
+	     		  JTextField F_bid,F_uid,F_period,F_issue,F_brfid,F_bstatus,F_bauth,F_btitle;
+	              JLabel l1,l2,l3,l4,l5,lblBookTitle,F_status,F_bauthor;  
+	              l1=new JLabel("Book Accession No.");  // Label 1 for Book ID
+	              l1.setBounds(10,157, 138,30); 
+	               
+	              l2=new JLabel("Personal ID No.");  //Label 2 for user ID
+	              l2.setBounds(10,287, 100,30); 
+	               
+	              l3=new JLabel("Period(days)");  //Label 3 for period
+	              l3.setBounds(10,320, 100,30); 
+	               
+	              l4=new JLabel("Issued Date(DD-MM-YYYY)");  //Label 4 for issue date
+	              l4.setBounds(10,353, 150,30); 
+	               
+	              l5 = new JLabel("Scanned RFID");
+	              l5.setBounds(10, 108, 138, 30);
+	              
+	              lblBookTitle = new JLabel("Book Title");
+	              lblBookTitle.setBounds(10, 198, 100, 14);
+	              
+	              F_status = new JLabel("Status");
+	              F_status.setBounds(176, 240, 46, 14);
+	              
+	              F_bauthor = new JLabel("Author");
+	              F_bauthor.setBounds(10, 239, 46, 14);
+	              
+	              F_brfid = new JTextField();
+	              F_brfid.setBounds(96, 108, 150, 30);
+	              
+	              F_bid = new JTextField();
+	              F_bid.setBounds(167, 158, 189, 30);
+	               
+	              F_uid=new JTextField();
+	              F_uid.setBounds(167, 288, 189, 30);
+	               
+	              F_period=new JTextField();
+	              F_period.setBounds(167, 321, 189, 30);
+	               
+	              F_issue=new JTextField();
+	              F_issue.setBounds(167, 354, 189, 30);  
+	              
+	              F_bstatus = new JTextField();
+	              F_bstatus.setBounds(222, 232, 134,30);
+	              
+	              F_btitle = new JTextField();
+	              F_btitle.setBounds(167, 191, 189, 30);
+	              
+	              F_bauth = new JTextField();
+	              F_bauth.setBounds(65, 232, 93, 30);
+	              
+	              JButton issueButton=new JButton("");//creating instance of JButton  
+	              issueButton.setOpaque(false);
+	              issueButton.setBorderPainted(false);
+	              issueButton.setBackground(Color.WHITE);
+	              issueButton.setIcon(new ImageIcon("src/img/borrow.png"));
+	              issueButton.setBounds(113,394,138,57);//x axis, y axis, width, height 
+	              issueButton.addActionListener(new ActionListener() {
+	                   
+	                  public void actionPerformed(ActionEvent e){
+	                   
+	                  String uid = F_uid.getText();
+	                  String bid = F_bid.getText();
+	                  String period = F_period.getText();
+	                  String issued_date = F_issue.getText();
+	                  String brfid = F_brfid.getText();
+	                  int period_int = Integer.parseInt(period);
+	                   
+	                  Connection connection = main.connect(); try {
+	                  Statement stmt = connection.createStatement();
+	                   stmt.executeUpdate("USE LIBRARY");
+	                   stmt.executeUpdate("INSERT INTO ISSUED(BRFID,UID,BACCNUM,ISSUED_DATE,PERIOD) VALUES ('"+brfid+"','"+uid+"','"+bid+"','"+issued_date+"','"+period_int+"')");
+	                   stmt.executeUpdate("UPDATE BOOKS SET ISSUED_DATE='"+issued_date+"' WHERE BACCNUM="+bid);
+	                   stmt.executeUpdate("UPDATE BOOKS SET PERIOD='"+period_int+"' WHERE BACCNUM="+bid);
+	                   stmt.executeUpdate("UPDATE BOOKS SET STATUS='On Loan' WHERE BACCNUM="+bid);
+	                   stmt.executeUpdate("UPDATE BOOKS SET UID='"+uid+"' WHERE BACCNUM="+bid);
+	                   stmt.executeUpdate("UPDATE BOOKS SET RETURN_DATE='' WHERE BACCNUM="+bid);
+	                   JOptionPane.showMessageDialog(null,"Book Issued!");
+	                   f.dispose();
+	                   admin_menu();
+	                   g.dispose();
+	                    
+	                  }
+	                   
+	                  catch (SQLException e1) {
+	                      // TODO Auto-generated catch block
+	                       JOptionPane.showMessageDialog(null, e1);
+	                  }   
+	                   
+	                  }
+	                   
+	              });
+	                   
+	               
+	                  g.getContentPane().add(l3);
+	                  g.getContentPane().add(l4);
+	                  g.getContentPane().add(issueButton);
+	                  g.getContentPane().add(l1);
+	                  g.getContentPane().add(l2);
+	                  g.getContentPane().add(F_uid);
+	                  g.getContentPane().add(F_bid);
+	                  g.getContentPane().add(F_period);
+	                  g.getContentPane().add(F_issue);
+	                  g.setSize(375,509);//400 width and 500 height  
+	                  g.getContentPane().setLayout(null);//using no layout managers  
+	                  g.getContentPane().add(F_brfid);
+	                  g.getContentPane().add(l5);
+	                  
+	                  JButton searchDB = new JButton("Search");
+	                  searchDB.addActionListener(new ActionListener() {
+	                      public void actionPerformed(ActionEvent e) {  
+	                          //Create DataBase Coonection and Fetching Records  
+	                          try {  
+	                              String str = F_brfid.getText();  
+	                              Class.forName("com.mysql.cj.jdbc.Driver"); 
+	                              Connection con = DriverManager.getConnection("jdbc:mysql://localhost/library");  
+	                              PreparedStatement st = con.prepareStatement("SELECT * FROM BOOKS where BRFID = ?");  
+	                              st.setString(1, str);  
+	                              //Excuting Query  
+	                              ResultSet rs = st.executeQuery();  
+	                              if (rs.next()) {  
+	                                  String s = rs.getString("BACCNUM");  
+	                                  String s1 = rs.getString("BTITLE");  
+	                                  String s2 = rs.getString("BAUTH");  
+	                                  String s3 = rs.getString("STATUS");  
+	                                  //Sets Records in TextFields.  
+	                                  F_bid.setText(s);  
+	                                  F_btitle.setText(s1);  
+	                                  F_bauth.setText(s2);  
+	                                  F_bstatus.setText(s3);  
+	                              } else {  
+	                                  JOptionPane.showMessageDialog(null, "Name not Found");  
+	                              }  
+	                              //Create Exception Handler  
+	                          } catch (Exception ex) {  
+	                              System.out.println(ex);  
+	                          }  
+	                      }  
+	                  });
+	                  searchDB.setBounds(256, 108, 100, 30);
+	                  g.getContentPane().add(searchDB);
+	                  g.getContentPane().add(lblBookTitle);
+	                  g.getContentPane().add(F_btitle);
+	                  g.getContentPane().add(F_bauth);
+	                  g.getContentPane().add(F_bauthor);
+	                  g.getContentPane().add(F_status);
+	                  g.getContentPane().add(F_bstatus);
+	                  g.setVisible(true);//making the frame visible 
+	                  g.setLocationRelativeTo(null);
+	                  F_bid.setEditable(false);
+	                  F_bstatus.setEditable(false);
+	                  F_bauth.setEditable(false);
+	                  F_btitle.setEditable(false);
+	                  
+	                  JLabel lblNewLabel = new JLabel("");
+	                  lblNewLabel.setBackground(Color.WHITE);
+	                  lblNewLabel.setIcon(new ImageIcon("C:\\Users\\Miko\\eclipse-workspace\\sysaddLibrary\\src\\img\\header.png"));
+	                  lblNewLabel.setBounds(0, 0, 416, 69);
+	                  g.getContentPane().add(lblNewLabel);
+		             
+	        	}
+	        
+	    });
+	     
 	    
 	    //Return books button
 	    JButton return_book=new JButton("",new ImageIcon("src/img/return.png")); 
